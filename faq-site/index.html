@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>よくある質問（FAQ）</title>
+    <script>
+      (function () {
+        var theme = null;
+        try {
+          theme = localStorage.getItem("faq-theme");
+        } catch (e) {
+          theme = null;
+        }
+        if (theme !== "light" && theme !== "dark") {
+          theme =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+        }
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a
+        class="logo-link"
+        href="https://www.ibm.com/products/bob"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <img src="bob.svg" alt="Bob（IBM Bobの製品ページを新しいタブで開く）" />
+      </a>
+      <button
+        id="theme-toggle"
+        class="theme-toggle"
+        type="button"
+        aria-pressed="false"
+      >
+        ダーク表示
+      </button>
+      <h1>よくある質問（FAQ）</h1>
+      <p>Bobに関するよくある質問と回答</p>
+    </header>
+
+    <div class="container">
+      <section class="controls" aria-label="検索と絞り込み">
+        <input
+          id="search-input"
+          class="search-input"
+          type="search"
+          placeholder="質問や回答を検索..."
+          aria-label="質問や回答を検索"
+        />
+        <nav id="category-nav" class="category-nav" aria-label="カテゴリ"></nav>
+      </section>
+
+      <main id="faq-list"></main>
+
+      <p id="empty-message" class="empty-message" role="status" hidden>
+        該当する質問が見つかりませんでした。キーワードやカテゴリを変更してください。
+      </p>
+    </div>
+
+    <script src="faq-data.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
