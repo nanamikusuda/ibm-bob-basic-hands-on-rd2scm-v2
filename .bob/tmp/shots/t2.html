@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head><script>try{localStorage.clear()}catch(e){}</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bob よくある質問</title>
+  <script>
+    try {
+      var savedTheme = localStorage.getItem("bob-faq-theme");
+      if (savedTheme === "light" || savedTheme === "dark") {
+        document.documentElement.setAttribute("data-theme", savedTheme);
+      }
+    } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand-logo" href="https://www.ibm.com/products/bob" target="_blank" rel="noopener noreferrer">
+        <img src="../../../bob.svg" alt="Bob(IBM Bobの製品ページへ)">
+      </a>
+      <div class="header-text">
+        <h1>Bob よくある質問</h1>
+        <p class="lead">Bob の概要や使い方、トラブル時の対処方法をまとめています。</p>
+      </div>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false">ダークテーマ</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="search">
+      <label for="search-input" class="search-label">キーワードで検索</label>
+      <input id="search-input" type="search" placeholder="キーワードで検索" autocomplete="off">
+    </div>
+
+    <div id="category-filter" class="category-filter" role="group" aria-label="カテゴリで絞り込み"></div>
+
+    <p id="result-count" class="result-count" aria-live="polite"></p>
+
+    <div id="faq-list" class="faq-list"></div>
+    <p id="empty-message" class="empty-message" hidden>該当するFAQがありません</p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">Bob FAQ</div>
+  </footer>
+
+  <script src="../../../faq-data.js"></script>
+  <script src="../../../script.js"></script>
+<pre id=out></pre><script>var r=function(l){return l+": data-theme="+document.documentElement.getAttribute("data-theme")+" pressed="+document.getElementById("theme-toggle").getAttribute("aria-pressed")+" saved="+localStorage.getItem("bob-faq-theme")+" bg="+getComputedStyle(document.body).backgroundColor}; var o=[];o.push(r('初期'));document.getElementById('out').textContent=o.join(' ; ');</script></body>
+</html>

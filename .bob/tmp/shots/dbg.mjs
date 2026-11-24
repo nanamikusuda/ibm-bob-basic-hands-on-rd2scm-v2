@@ -1,0 +1,26 @@
+import { spawn } from "node:child_process";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+const URL_ = "file://" + path.join(root, "index.html");
+const PORT = 9334;
+const chrome = spawn("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", ["--headless=new","--disable-gpu",`--remote-debugging-port=${PORT}`,`--user-data-dir=/tmp/bob-dbg-${Date.now()}`,"about:blank"],{stdio:"ignore"});
+const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+let t; for(let i=0;i<50;i++){try{t=await (await fetch(`http://127.0.0.1:${PORT}/json`)).json();break}catch{await sleep(200)}}
+const ws = new WebSocket(t.find(x=>x.type==="page").webSocketDebuggerUrl); await new Promise(r=>ws.onopen=r);
+let id=0; const p=new Map(); ws.onmessage=m=>{const g=JSON.parse(m.data); if(g.id&&p.has(g.id)){p.get(g.id)(g);p.delete(g.id)}};
+const send=(method,params={})=>new Promise(res=>{const i=++id;p.set(i,res);ws.send(JSON.stringify({id:i,method,params}))});
+const ev=async e=>(await send("Runtime.evaluate",{expression:e,returnByValue:true})).result.result.value;
+await send("Page.enable");
+await send("Page.navigate",{url:URL_}); await sleep(800);
+console.log("origin:", await ev("location.origin+' '+location.href"));
+await ev(`localStorage.clear()`);
+await ev(`document.getElementById("theme-toggle").click()`);
+console.log("after click saved:", await ev(`localStorage.getItem("bob-faq-theme")`));
+await sleep(1000);
+await send("Page.reload"); await sleep(1000);
+console.log("after reload (wait 1s) saved:", await ev(`localStorage.getItem("bob-faq-theme")`), "data-theme:", await ev(`document.documentElement.getAttribute("data-theme")`));
+await ev(`localStorage.setItem("bob-faq-theme","dark")`);
+await send("Page.reload"); await sleep(1000);
+console.log("set via evaluate then reload saved:", await ev(`localStorage.getItem("bob-faq-theme")`));
+ws.close(); chrome.kill();

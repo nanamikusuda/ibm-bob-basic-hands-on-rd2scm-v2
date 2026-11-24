@@ -1,0 +1,23 @@
+import { spawn } from "node:child_process";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+const URL_ = "file://" + path.join(root, "index.html");
+const PORT = 9336;
+const chrome = spawn("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", ["--headless=new","--disable-gpu",`--remote-debugging-port=${PORT}`,`--user-data-dir=/tmp/bob-e-${Date.now()}`,"about:blank"],{stdio:"ignore"});
+const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
+let t; for(let i=0;i<50;i++){try{t=await (await fetch(`http://127.0.0.1:${PORT}/json`)).json();break}catch{await sleep(200)}}
+const ws=new WebSocket(t.find(x=>x.type==="page").webSocketDebuggerUrl); await new Promise(r=>ws.onopen=r);
+let id=0;const p=new Map();ws.onmessage=m=>{const g=JSON.parse(m.data);if(g.id&&p.has(g.id)){p.get(g.id)(g);p.delete(g.id)}};
+const send=(method,params={})=>new Promise(res=>{const i=++id;p.set(i,res);ws.send(JSON.stringify({id:i,method,params}))});
+const ev=async e=>(await send("Runtime.evaluate",{expression:e,returnByValue:true})).result.result.value;
+await send("Page.enable");
+await send("Page.navigate",{url:URL_});await sleep(800);
+await ev(`document.getElementById("theme-toggle").focus()`);
+const st=()=>ev(`document.getElementById("theme-toggle").getAttribute("aria-pressed")+"/"+document.documentElement.getAttribute("data-theme")`);
+console.log("before:",await st());
+await send("Input.dispatchKeyEvent",{type:"keyDown",key:"Enter",code:"Enter",windowsVirtualKeyCode:13,text:"\r"});
+await send("Input.dispatchKeyEvent",{type:"keyUp",key:"Enter",code:"Enter",windowsVirtualKeyCode:13});
+await sleep(200);
+console.log("after Enter(text付き):",await st());
+ws.close();chrome.kill();
